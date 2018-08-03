@@ -35,24 +35,24 @@ public class SlackManagedConnectionMetaData implements ManagedConnectionMetaData
     @Override
     public String getEISProductName() throws ResourceException {
         log.finest("getEISProductName()");
-        return null; //TODO
+        return "Slack connector";
     }
 
     @Override
     public String getEISProductVersion() throws ResourceException {
         log.finest("getEISProductVersion()");
-        return null; //TODO
+        return "0.1-SNAPSHOT";
     }
 
     @Override
     public int getMaxConnections() throws ResourceException {
         log.finest("getMaxConnections()");
-        return 0; //TODO
+        return 0;
     }
 
     @Override
     public String getUserName() throws ResourceException {
         log.finest("getUserName()");
-        return null; //TODO
+        return null;
     }
 }
