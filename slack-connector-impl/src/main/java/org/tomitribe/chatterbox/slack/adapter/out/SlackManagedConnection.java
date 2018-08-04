@@ -40,13 +40,9 @@ import java.util.logging.Logger;
 public class SlackManagedConnection implements ManagedConnection {
 
     private final Logger log = Logger.getLogger(SlackManagedConnection.class.getName());
-
     private PrintWriter logwriter;
-
     private SlackManagedConnectionFactory mcf;
-
     private List<ConnectionEventListener> listeners;
-
     private SlackConnectionImpl connection;
 
     public SlackManagedConnection(final SlackManagedConnectionFactory mcf) {

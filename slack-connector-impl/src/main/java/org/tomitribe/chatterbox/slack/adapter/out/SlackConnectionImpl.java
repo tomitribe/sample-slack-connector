@@ -22,7 +22,6 @@ import org.tomitribe.chatterbox.slack.api.SlackConnection;
 
 public class SlackConnectionImpl implements SlackConnection {
     private SlackManagedConnection mc;
-
     private SlackManagedConnectionFactory mcf;
 
     public SlackConnectionImpl(final SlackManagedConnection mc, final SlackManagedConnectionFactory mcf) {

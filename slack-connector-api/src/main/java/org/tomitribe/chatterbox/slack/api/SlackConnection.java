@@ -20,7 +20,6 @@
 package org.tomitribe.chatterbox.slack.api;
 
 public interface SlackConnection {
-    public void sendMessage(final String channel, final String message);
-
-    public void close();
+    void sendMessage(final String channel, final String message);
+    void close();
 }

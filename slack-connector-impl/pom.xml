@@ -57,9 +57,9 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>com.github.flowctrl</groupId>
+      <groupId>com.github.allbegray</groupId>
       <artifactId>slack-api</artifactId>
-      <version>v1.1.0.RELEASE</version>
+      <version>v1.6.0.RELEASE</version>
     </dependency>
   </dependencies>
 </project>

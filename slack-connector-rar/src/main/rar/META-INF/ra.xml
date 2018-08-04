@@ -43,15 +43,5 @@
             <transaction-support>NoTransaction</transaction-support>
             <reauthentication-support>false</reauthentication-support>
         </outbound-resourceadapter>
-        <inbound-resourceadapter>
-            <messageadapter>
-                <messagelistener>
-                    <messagelistener-type>org.tomitribe.chatterbox.slack.api.InboundListener</messagelistener-type>
-                    <activationspec>
-                        <activationspec-class>org.tomitribe.chatterbox.slack.adapter.SlackActivationSpec</activationspec-class>
-                    </activationspec>
-                </messagelistener>
-            </messageadapter>
-        </inbound-resourceadapter>
     </resourceadapter>
 </connector>

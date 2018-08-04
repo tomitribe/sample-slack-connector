@@ -29,13 +29,9 @@ import java.util.logging.Logger;
 
 public class SlackConnectionFactoryImpl implements SlackConnectionFactory {
     private static final long serialVersionUID = 1L;
-
     private final Logger log = Logger.getLogger(SlackConnectionFactoryImpl.class.getName());
-
     private Reference reference;
-
     private SlackManagedConnectionFactory mcf;
-
     private ConnectionManager connectionManager;
 
     public SlackConnectionFactoryImpl(final SlackManagedConnectionFactory mcf, final ConnectionManager cxManager) {
@@ -60,6 +56,4 @@ public class SlackConnectionFactoryImpl implements SlackConnectionFactory {
         log.finest("setReference()");
         this.reference = reference;
     }
-
-
 }

@@ -23,6 +23,5 @@ import javax.resource.ResourceException;
 import java.io.Serializable;
 
 public interface SlackConnectionFactory extends Serializable, Referenceable {
-    public SlackConnection getConnection() throws ResourceException;
-
+    SlackConnection getConnection() throws ResourceException;
 }

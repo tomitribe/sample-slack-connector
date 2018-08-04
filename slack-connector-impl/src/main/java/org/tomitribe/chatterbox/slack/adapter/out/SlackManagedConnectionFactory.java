@@ -45,16 +45,9 @@ import javax.security.auth.Subject;
 public class SlackManagedConnectionFactory implements ManagedConnectionFactory, ResourceAdapterAssociation {
 
     private static final long serialVersionUID = 1L;
-
-    private static Logger log = Logger.getLogger(SlackManagedConnectionFactory.class.getName());
-
+    private final  Logger log = Logger.getLogger(SlackManagedConnectionFactory.class.getName());
     private ResourceAdapter ra;
-
     private PrintWriter logwriter;
-
-    public SlackManagedConnectionFactory() {
-
-    }
 
     public Object createConnectionFactory(final ConnectionManager cxManager) throws ResourceException {
         log.finest("createConnectionFactory()");
