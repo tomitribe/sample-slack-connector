@@ -17,11 +17,14 @@
 package org.tomitribe.chatterbox.slack.adapter;
 
 import allbegray.slack.SlackClientFactory;
+import allbegray.slack.rtm.EventListener;
 import allbegray.slack.rtm.SlackRealTimeMessagingClient;
 import allbegray.slack.type.Authentication;
 import allbegray.slack.type.Presence;
 import allbegray.slack.webapi.SlackWebApiClient;
 import allbegray.slack.webapi.method.chats.ChatPostMessageMethod;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.tomitribe.chatterbox.slack.api.InboundListener;
 
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
@@ -30,11 +33,19 @@ import javax.resource.spi.ConfigProperty;
 import javax.resource.spi.Connector;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterInternalException;
+import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.xa.XAResource;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 @Connector(description = "Sample Resource Adapter", displayName = "Sample Resource Adapter", eisType = "Sample Resource Adapter", version = "1.0")
-public class SlackResourceAdapter implements ResourceAdapter {
+public class SlackResourceAdapter implements ResourceAdapter, EventListener {
+    final Map<SlackActivationSpec, MessageEndpoint> targets = new ConcurrentHashMap<>();
+
+    private final Logger log = Logger.getLogger(SlackResourceAdapter.class.getName());
 
     @ConfigProperty
     private String token;
@@ -42,6 +53,15 @@ public class SlackResourceAdapter implements ResourceAdapter {
     private SlackRealTimeMessagingClient slackRealTimeMessagingClient;
     private SlackWebApiClient webApiClient;
     private String user;
+    private Method messageReceivedMethod;
+
+    public SlackResourceAdapter() {
+        try {
+            messageReceivedMethod = InboundListener.class.getMethod("messageReceived", String.class, String.class);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalStateException("Unable to lookup messageReceived method on InboundListener");
+        }
+    }
 
     public void start(final BootstrapContext bootstrapContext) throws ResourceAdapterInternalException {
         webApiClient = SlackClientFactory.createWebApiClient(token);
@@ -61,9 +81,21 @@ public class SlackResourceAdapter implements ResourceAdapter {
 
     public void endpointActivation(final MessageEndpointFactory messageEndpointFactory, final ActivationSpec activationSpec)
             throws ResourceException {
+        final SlackActivationSpec slackActivationSpec = (SlackActivationSpec) activationSpec;
+
+        final MessageEndpoint messageEndpoint = messageEndpointFactory.createEndpoint(null);
+        targets.put(slackActivationSpec, messageEndpoint);
     }
 
     public void endpointDeactivation(final MessageEndpointFactory messageEndpointFactory, final ActivationSpec activationSpec) {
+        final SlackActivationSpec telnetActivationSpec = (SlackActivationSpec) activationSpec;
+
+        final MessageEndpoint endpoint = targets.get(telnetActivationSpec);
+        if (endpoint == null) {
+            throw new IllegalStateException("No Endpoint to undeploy for ActivationSpec " + activationSpec);
+        }
+
+        endpoint.release();
     }
 
     public XAResource[] getXAResources(final ActivationSpec[] activationSpecs) throws ResourceException {
@@ -74,6 +106,33 @@ public class SlackResourceAdapter implements ResourceAdapter {
         ChatPostMessageMethod postMessage = new ChatPostMessageMethod(channel, message);
         postMessage.setUsername(user);
         webApiClient.postMessage(postMessage);
+    }
+
+    @Override
+    public void onMessage(final JsonNode jsonNode) {
+        final String text = jsonNode.get("text").textValue();
+        final String channel = jsonNode.get("channel").textValue();
+
+        for (final MessageEndpoint endpoint : targets.values()) {
+            boolean beforeDelivery = false;
+
+            try {
+                endpoint.beforeDelivery(messageReceivedMethod);
+                beforeDelivery = true;
+
+                ((InboundListener) endpoint).messageReceived(channel, text);
+            } catch (Throwable t) {
+                log.severe("Unable to deliver message to endpoint. Cause: " + t.getMessage());
+            } finally {
+                if (beforeDelivery) {
+                    try {
+                        endpoint.afterDelivery();
+                    } catch (Throwable t) {
+                        log.severe("Unable to call afterDelivery(). Cause: " + t.getMessage());
+                    }
+                }
+            }
+        }
     }
 
     public String getToken() {
