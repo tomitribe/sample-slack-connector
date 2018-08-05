@@ -29,11 +29,13 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
+import java.util.logging.Logger;
 
 @Singleton
 @Lock(LockType.READ)
 @Path("sender")
 public class Sender {
+    private final Logger log = Logger.getLogger(Sender.class.getName());
 
     @Resource
     private SlackConnectionFactory cf;
@@ -47,8 +49,7 @@ public class Sender {
             connection.sendMessage(channel, message);
             connection.close();
         } catch (ResourceException e) {
-            // ignore
+            log.severe("Unexpected error sending message to Slack: " + e.getMessage());
         }
     }
-
 }
